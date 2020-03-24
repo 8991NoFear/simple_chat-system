@@ -1,4 +1,4 @@
-simple_chat-system
+simple_chat_system
 business internship 2020
 
 STEPS:
