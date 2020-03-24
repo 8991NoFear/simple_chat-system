@@ -1,0 +1,11 @@
+version: '3'
+services: 
+    app:
+        build: './'
+        image: 'scs'
+        volumes: 
+            - ./scs:/var/www/html/scs
+        ports: 
+            - 8080:80
+        tty: true
+        stdin_open: true
