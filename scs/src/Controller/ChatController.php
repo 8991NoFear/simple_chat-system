@@ -26,8 +26,32 @@ class ChatController extends AppController
     {
         $feed = $this->Feeds->newEmptyEntity();
         if ($this->request->is('post')) {
-            $feed->user_id = $this->Authentication->getIdentity()->id;
             $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
+            $feed->user_id = $this->Authentication->getIdentity()->id;
+
+            // FILES
+            $attachment= $this->request->getData('media');
+            $clientFileName = $attachment->getClientFilename();
+
+            $baseFileName = basename($clientFileName);
+            $mediaFileType = strtolower(pathinfo($clientFileName,PATHINFO_EXTENSION));
+            
+            $targetPath = null;
+            $projectPath = '/var/www/html/scs';
+            if ($mediaFileType == 'jpg' || $mediaFileType == 'png' || $mediaFileType == 'jpeg') {
+                $targetPath = 'picture' . $baseFileName;
+                $feed->image_file_name = $projectPath . $targetPath;
+            } else if ($mediaFileType == 'mp4' || $mediaFileType == 'flv') {
+                $targetPath = 'video' . $baseFileName;
+                $feed->video_file_name = $projectPath . $targetPath;
+            }
+            
+            if ($targetPath != null) {
+                $attachment->moveTo($targetPath);
+            } else {
+                $this->Flash->error(__('File does not support.'));
+            }
+            
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Posted success'));
             } else {
@@ -53,8 +77,8 @@ class ChatController extends AppController
     {
         $feed = $this->Feeds->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $feed->user_id = $this->Authentication->getIdentity()->id;
             $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
+            $feed->user_id = $this->Authentication->getIdentity()->id;
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Updated success.'));
 

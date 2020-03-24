@@ -1,3 +1,4 @@
+</head>
 <script>
     function hideOrShow(key) {
         var element = document.getElementById("hidden-form" + key);
@@ -11,10 +12,19 @@
 </style>
 <div>
     <?php
-        echo $this->Form->create(null, array('url' => ['action' => 'post']));
+        echo $this->Form->create(null, array('url' => ['action' => 'post'], 'type' => 'file'));
         echo $this->Form->control('name');
         echo $this->Form->control('message');
+        echo $this->Form->control('media', ['type' => 'file']);
         echo $this->Form->button(__('POST'));
+        echo $this->Html->link(
+            'LOGOUT',
+            [
+                'controller' => 'Users',
+                'action' => 'logout',
+                'class' => 'button'
+            ]
+        );
         echo $this->Form->end();
     ?>
 </div>
@@ -24,6 +34,9 @@
             <tr>
                 <td>
                     <?= $feed->name?>
+                </td>
+                <td>
+
                 </td>
                 <td>
                     <?= $feed->message?>
