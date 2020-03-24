@@ -20,7 +20,7 @@
             <table>
                 <tr>
                     <th><?= __('User') ?></th>
-                    <td><?= $feed->has('user') ? $this->Html->link($feed->user->id, ['controller' => 'Users', 'action' => 'view', $feed->user->id]) : '' ?></td>
+                    <td><?= $this->Html->link($feed->user_id, ['controller' => 'Users', 'action' => 'view', $feed->user_id]) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Id') ?></th>

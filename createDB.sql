@@ -11,7 +11,7 @@ create table users (
 create table feeds (
     id int auto_increment primary key,
     name text,
-    user_id int,
+    user_id int not null,
     image_file_name text,
     video_file_name text,
     message text,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use \App\Model\Table\FeedsTable;
+use \App\Model\Table\UsersTable;
 
 class ChatController extends AppController
 {  
@@ -12,6 +13,7 @@ class ChatController extends AppController
         parent::initialize();
         
         $this->loadModel('Feeds');
+        $this->loadModel('Users');
     }
 
     public function index()
@@ -24,7 +26,8 @@ class ChatController extends AppController
     {
         $feed = $this->Feeds->newEmptyEntity();
         if ($this->request->is('post')) {
-            $feed = $this->Feeds->patchEntity($feed, $this->request->getData());
+            $feed->user_id = $this->Authentication->getIdentity()->id;
+            $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Posted success'));
             } else {
@@ -50,6 +53,7 @@ class ChatController extends AppController
     {
         $feed = $this->Feeds->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
+            $feed->user_id = $this->Authentication->getIdentity()->id;
             $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Updated success.'));
