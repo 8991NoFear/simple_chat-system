@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use \App\Model\Table\FeedsTable;
 use \App\Model\Table\UsersTable;
+use \Cake\Routing\Router;
 
 class ChatController extends AppController
 {  
@@ -25,45 +26,31 @@ class ChatController extends AppController
     public function post()
     {
         $feed = $this->Feeds->newEmptyEntity();
+
         if ($this->request->is('post')) {
             $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
             $feed->user_id = $this->Authentication->getIdentity()->id;
+            $mediaFile = $this->request->getData('media');
 
-            // FILES
-            $attachment= $this->request->getData('media');
-            $clientFileName = $attachment->getClientFilename();
+            if (!empty($mediaFile->getClientFilename())) {
+                $this->uploadMediaFile($feed, $mediaFile);
+            }
 
-            $baseFileName = basename($clientFileName);
-            $mediaFileType = strtolower(pathinfo($clientFileName,PATHINFO_EXTENSION));
-            
-            $targetPath = null;
-            $projectPath = '/var/www/html/scs';
-            if ($mediaFileType == 'jpg' || $mediaFileType == 'png' || $mediaFileType == 'jpeg') {
-                $targetPath = 'picture' . $baseFileName;
-                $feed->image_file_name = $projectPath . $targetPath;
-            } else if ($mediaFileType == 'mp4' || $mediaFileType == 'flv') {
-                $targetPath = 'video' . $baseFileName;
-                $feed->video_file_name = $projectPath . $targetPath;
-            }
-            
-            if ($targetPath != null) {
-                $attachment->moveTo($targetPath);
-            } else {
-                $this->Flash->error(__('File does not support.'));
-            }
-            
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Posted success'));
             } else {
                 $this->Flash->error(__('Posted Failure'));
-            }
+            } 
+
         }
+
         return $this->redirect(['action' => 'index']);
     }
 
     public function delete($id = null)
     {
         $feed = $this->Feeds->get($id);
+
         if ($this->Feeds->delete($feed)) {
             $this->Flash->success(__('The post has been deleted.'));
         } else {
@@ -76,17 +63,62 @@ class ChatController extends AppController
     public function edit($id = null)
     {
         $feed = $this->Feeds->get($id);
-        if ($this->request->is(['patch', 'post', 'put'])) {
+
+        if ($this->request->is(['post'])) {
             $feed = $this->Feeds->patchEntity($feed, $this->request->getData(), ['fields' => ['name', 'message']]);
             $feed->user_id = $this->Authentication->getIdentity()->id;
+
             if ($this->Feeds->save($feed)) {
                 $this->Flash->success(__('Updated success.'));
-
             } else {
                 $this->Flash->error(__('Updated failure. Please, try again.'));
             }
         }
+
         return $this->redirect(['action' => 'index']);
+    }
+
+    private function checkTypeFile($extension = null)
+    {
+        $res = null;
+        $extension = strtolower($extension);
+
+        if ($extension == 'jpg' || $extension == 'gif' || $extension == 'png' || $extension == 'jpeg') {
+            $res = 'photo';
+        } else if ($extension == 'mp4' || $extension == 'avi' || $extension == 'wmv' || $extension == 'mov') {
+            $res = 'video';
+        }
+        
+        return $res;
+    }
+
+    private function uploadMediaFile($feed , $mediaFile): void
+    {  
+        $targetPath = null;
+        $clientFileName = $mediaFile->getClientFilename();
+        $baseName = basename($clientFileName);
+        $extension = pathinfo($clientFileName, PATHINFO_EXTENSION);
+        $baseUrl = Router::fullbaseUrl();
+        $vendorUrl = $baseUrl . '/scs/webroot/';
+        $feed->image_file_name = null;
+        $feed->video_file_name = null;
+
+        if ($this->checkTypeFile($extension) == 'photo') {
+            $targetPath = 'photos/' . $baseName;
+            $feed->image_file_name = $vendorUrl . $targetPath;
+        } else if ($this->checkTypeFile($extension) == 'video') {
+            $targetPath = 'videos/' . $baseName;
+            $feed->video_file_name = $vendorUrl . $targetPath;
+        } else {
+            $this->Flash->error(__('File does not support.'));
+        }
+        
+        if ($targetPath != null) {
+            $mediaFile->moveTo($targetPath);
+            $res = true;
+        } else {
+            $this->Flash->error(__('Cannot upload that file.'));
+        }
     }
 
 }

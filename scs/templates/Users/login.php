@@ -10,5 +10,5 @@
     <?= $this->Form->submit(__('Login')); ?>
     <?= $this->Form->end() ?>
 
-    <?= $this->Html->link("Regist", ['action' => 'regist']) ?>
+    <?= $this->Html->link("Regist", ['action' => 'regist'], ['class' => 'custom-link']) ?>
 </div>

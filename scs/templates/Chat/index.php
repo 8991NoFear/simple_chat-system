@@ -1,4 +1,3 @@
-</head>
 <script>
     function hideOrShow(key) {
         var element = document.getElementById("hidden-form" + key);
@@ -22,21 +21,30 @@
             [
                 'controller' => 'Users',
                 'action' => 'logout',
-                'class' => 'button'
-            ]
+            ],
+            ['class' => 'custom-link']
         );
-        echo $this->Form->end();
+        echo $this->Form->end(); 
     ?>
 </div>
 <div>
     <table>
-        <?php foreach ($feeds as $key => $feed): ?>
+        <?php foreach ($feeds as $feed): ?>
             <tr>
                 <td>
                     <?= $feed->name?>
                 </td>
                 <td>
-
+                    <?php
+                        if ($feed->image_file_name != null) {
+                            echo "<img src = '$feed->image_file_name' width = '320' height= '240' />";
+                        } else if ($feed->video_file_name != null) {
+                            echo "<video width = '320' height= '240' controls>";
+                            echo "<source src =  '$feed->video_file_name'/>";
+                            echo "Your browser does not support this video!!!";
+                            echo "</video>";
+                        }
+                    ?>
                 </td>
                 <td>
                     <?= $feed->message?>
@@ -53,12 +61,12 @@
                 </td>
                 <td>
                     <?php
-                        echo $this->Form->button('Edit', ['onclick' => "hideOrShow($key)"]);
+                        echo $this->Form->button('Edit', ['onclick' => "hideOrShow($feed->id)"]);
                     ?>
                 </td>
             </tr>
             <tr>
-                <td id="hidden-form<?= $key ?>" style="display:none">
+                <td id="hidden-form<?= $feed->id; ?>" style="display:none">
                     <?php
                         echo $this->Form->create(null, array('url' => ['action' => 'edit', $feed->id]));
                         echo $this->Form->control('name');
